@@ -7,8 +7,8 @@ import MySQLdb
 class Database:
     host = 'localhost'
     user = 'root'
-    password = '_newir* g'
-    db = 'sinaservice'
+    password = '123456'
+    db = 'weibo_service'
 
     def __init__(self):
         self.connection = MySQLdb.connect(self.host, self.user, self.password, self.db)
@@ -25,15 +25,16 @@ class Database:
         _values = ",".join(["%s" for i in range(len(columns))])
         _sql = "".join([_prefix,"(",_fields,") VALUES (",_values,")"])
         _params = [ data[key] for key in columns ]
-        print _sql
-        print _params
-        # self.cursor.execute(_sql,tuple(_params))
-        # self.connection.commit()
+        # print _sql
+        # print _params
+        self.cursor.execute(_sql,tuple(_params))
+        self.connection.commit()
 
     def is_key_exist(self,table_name,key_name,key_value):
-        query_sql = "select * from `%s` where `%s` = %s"
-        print (table_name, key_name, key_value)
-        return self.cursor.execute(query_sql,(table_name, key_name, key_value))
+        
+        query_sql = """select * from %s where %s='%s'"""%(table_name, key_name, key_value)
+        return self.cursor.execute(query_sql)
+
     # def test(self):
     #     query_sql = "show tables;"
     #     f = self.cursor.execute(query_sql)
@@ -43,4 +44,4 @@ class Database:
 
 if __name__ == '__main__':
     db = Database()
-    db.test()
+    print db.is_key_exist("report_info","rid","K1CaL7ABf7Kgl")

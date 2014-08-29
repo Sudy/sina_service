@@ -71,7 +71,13 @@ class Crawler(object):
 		next_url = self.domain_url.format(access_token = self.access_token, domain= uname)
 		resp = requests.get(url=next_url)
 		json_object =  resp.json()
-		self.save_user_info_to_db(json_object)
+		self.save_user_info_to_db(json_object,uname)
+
+	def get_standard_time(self,time_str):
+		time_struct = time.strptime(time_str,"%a %b %d %H:%M:%S +0800 %Y")
+		return time.strftime("%Y-%m-%d %H:%M:%S",time_struct)
+
+
 
 	def save_user_info_to_db(self,json_object,uname):
 
@@ -79,18 +85,20 @@ class Crawler(object):
 
 		user_info_dict["udomain"] = uname
 		user_info_dict["idstr"] = json_object.get("idstr","")
-		user_info_dict["name"] = json_object.get("name","")
-		user_info_dict["location"] = json_object.get("location","")
-		user_info_dict["description"] = json_object.get("description","")
+		user_info_dict["name"] = json_object.get("name","").encode("utf-8")
+		user_info_dict["location"] = json_object.get("location","").encode("utf-8")
+		user_info_dict["description"] = json_object.get("description","").encode("utf-8")
 		user_info_dict["gender"] = json_object.get("gender","")
 		user_info_dict["followers_count"] = json_object.get("followers_count",0)
 		user_info_dict["friends_count"] = json_object.get("friends_count",0)
 		user_info_dict["statuses_count"] = json_object.get("statuses_count",0)
 		user_info_dict["favourites_count"] = json_object.get("favourites_count",0)
-		user_info_dict["created_at"] = json_object.get("created_at",0)
+
+		created_at = json_object.get("created_at",0)
+		user_info_dict["created_at"] = self.get_standard_time(created_at)
 		user_info_dict["verified"] = json_object.get("verified",False)
 		user_info_dict["verified_type"] = json_object.get("verified_type",-1)
-		user_info_dict["verified_reason"] = json_object.get("verified_reason","")
+		user_info_dict["verified_reason"] = json_object.get("verified_reason","").encode("utf-8")
 		user_info_dict["bi_followers_count"] = json_object.get("bi_followers_count",0)
 
 		self.db.insert("user",user_info_dict)
@@ -130,6 +138,7 @@ class Crawler(object):
 		else:
 			self.deal_with_redirect(resp.content,url,report_type)
 
+
 	def crawl_weibo_content(self,url):
 		content_dict = dict()
 
@@ -141,11 +150,11 @@ class Crawler(object):
 		json_object = resp.json()
 
 		created_at =  json_object.get("created_at","")
-		time_struct = time.strptime(created_at,"%a %b %d %H:%M:%S +0800 %Y")
-		content_dict["weibo_create_time"] = time.strftime("%Y-%m-%d %H:%M:%S",time_struct)
+		
+		content_dict["weibo_create_time"] = self.get_standard_time(created_at)
 
 
-		content_dict["report_origin_text"] =  json_object.get("text","")
+		content_dict["report_origin_text"] =  json_object.get("text","").encode("utf-8")
 		content_dict["weibo_comment_count"] =  json_object.get("comments_count",0)
 		content_dict["weibo_repost_count"] =  json_object.get("reposts_count",0)
 		content_dict["weibo_like_count"] =  json_object.get("attitudes_count",0)
@@ -178,8 +187,8 @@ class Crawler(object):
 		rid = url.rsplit("=")[-1]
 
 		#if there is already one in database ignore the rest
-		# if self.db.is_key_exist("report_info","rid",rid):
-		# 	return False
+		if self.db.is_key_exist("report_info","rid",rid):
+			return False
 
 		report_info_dict = dict()
 		report_info_dict["rid"] = rid
