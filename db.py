@@ -7,8 +7,8 @@ import MySQLdb
 class Database:
     host = 'localhost'
     user = 'root'
-    password = '123456'
-    db = 'YLC'
+    password = '_newir* g'
+    db = 'sinaservice'
 
     def __init__(self):
         self.connection = MySQLdb.connect(self.host, self.user, self.password, self.db)
@@ -16,6 +16,7 @@ class Database:
         self.cursor.execute("SET NAMES utf8")
         self.cursor.execute("SET CHARACTER_SET_CLIENT=utf8")
         self.cursor.execute("SET CHARACTER_SET_RESULTS=utf8")
+
 
     def insert(self,table_name,data):
         columns = data.keys()
@@ -29,27 +30,16 @@ class Database:
         # self.cursor.execute(_sql,tuple(_params))
         # self.connection.commit()
 
-    def is_key_exist(self,key_name):
-        query_sql = "select * from user where domain = %s"
-        return self.cursor.execute(query_sql,tuple(key_name))
-
+    def is_key_exist(self,table_name,key_name,key_value):
+        query_sql = "select * from `%s` where `%s` = %s"
+        return self.cursor.execute(query_sql,(table_name, key_name, key_value))
+    # def test(self):
+    #     query_sql = "show tables;"
+    #     f = self.cursor.execute(query_sql)
+    #     print f 
     def __del__(self):
         self.connection.close()
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     db = Database()
-    for line in sys.stdin:
-        if line != "":
-            weibo_data = line.strip().split("\t",5)
-        try:
-            query_sql = "insert into weibodata (w_mid,w_content,w_loc,w_time,w_emotion,w_uname)\
-            values (%s, %s, %s, %s, %s, %s)"
-            #print file_name,weibo_data[1]
-            data = (weibo_data[0],weibo_data[1],weibo_data[2],weibo_data[3],weibo_data[4],weibo_data[5])
-
-            #print query_sql
-            db.insert(query_sql,data)
-        except:
-            print weibo_data[0],weibo_data[0]
-        continue
+    db.test()
