@@ -32,6 +32,7 @@ class Database:
 
     def is_key_exist(self,table_name,key_name,key_value):
         query_sql = "select * from `%s` where `%s` = %s"
+        print (table_name, key_name, key_value)
         return self.cursor.execute(query_sql,(table_name, key_name, key_value))
     # def test(self):
     #     query_sql = "show tables;"

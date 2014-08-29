@@ -102,7 +102,7 @@ class Crawler(object):
 		#if user already exists in database 
 		#ignore it
 
-		if is_key_exist("user","udomain",user_text):
+		if self.db.is_key_exist("user","udomain",user_text):
 			return
 		if self.uid_pattern.match(user_text):
 			self.get_user_by_uid(user_text)
@@ -178,14 +178,14 @@ class Crawler(object):
 		rid = url.rsplit("=")[-1]
 
 		#if there is already one in database ignore the rest
-		if self.db.is_key_exist("report_info","rid",rid):
-			return False
+		# if self.db.is_key_exist("report_info","rid",rid):
+		# 	return False
 
 		report_info_dict = dict()
 		report_info_dict["rid"] = rid
 		report_info_dict["report_type"] = report_type
-		report_info_dict["reporter"] = user_urls[0].rsplit('/',1)[0]
-		report_info_dict["bereporteder"] = user_urls[1].rsplit('/',1)[0]
+		report_info_dict["reporter"] = user_urls[0].rsplit('/',1)[-1]
+		report_info_dict["bereporteder"] = user_urls[1].rsplit('/',1)[-1]
 
 		resp = self.rsession.get(url=url)
 		html_text = self.get_script_component(self.detail_pattern,resp.content)
@@ -227,6 +227,7 @@ class Crawler(object):
 					text =  html_xpath.xpath('//div[@class="W_main_half_r"]//div[@class="item top"]//div[@class="con"]/text()')[0]
 					report_info_dict["report_origin_text"] = text
 			self.db.insert("report_info",report_info_dict)
+			return True
 
 if __name__ == "__main__":
 	crawler = Crawler()
